@@ -19,8 +19,8 @@ public class OktaSyslog {
     public static void main(String[] args){
 
         Client client = Clients.builder()
-                .setOrgUrl("https://graylog-dev-337840.okta.com")
-                .setClientCredentials(new TokenClientCredentials("00JJ3b6EcWUOcc1SEXBqHRwfodQIRpMaz5W3of2UVG"))
+                .setOrgUrl("https://graylog.okta.com")
+                .setClientCredentials(new TokenClientCredentials("{include the generated token}"))
                 .build();
 
         UserList users = client.listUsers();
