@@ -44,28 +44,23 @@ public class OktaSyslog {
         println("First user in collection: " + users.iterator().next().getProfile().getEmail());
 
         //get all the logs
-        /*LogEventList logEvents = client.getLogs();
-        logEvents(client.getLogs());*/
-
+        LogEventList logEvents = client.getLogs();
+        logEvents(client.getLogs());
 
         //filter query example
-        /*get logs for a particular eventType
+        /*get logs based on these filters
         actor who caused the action
         eventType eq "system.api_token.create"
         outcome of the event
         severity eq "INFO"
         target*/
-        LogEventList logEvents = client.getLogs(null, null, "eventType eq \"system.api_token.create\"", null , null);
+        LogEventList logEvents2 = client.getLogs(null, null, "eventType eq \"system.api_token.create\"", null , null);
         System.out.println("the events with eventType equals system.api_token.create------------------------------------------------------------------"+logEvents);
-        logEvents(logEvents);
+        logEvents(logEvents2);
 
         LogEventList logEvents1 = client.getLogs(null, null, null, "INFO" , null);
         System.out.println("----------------------------severity WARN");
         logEvents(logEvents1);
-
-
-
-
 
     }
 
