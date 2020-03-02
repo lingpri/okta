@@ -1,10 +1,14 @@
 import com.okta.sdk.authc.credentials.TokenClientCredentials;
 import com.okta.sdk.client.Client;
 import com.okta.sdk.client.Clients;
+import com.okta.sdk.resource.log.LogEvent;
+import com.okta.sdk.resource.log.LogEventList;
 import com.okta.sdk.resource.user.User;
 import com.okta.sdk.resource.user.UserList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.Consumer;
 
 public class OktaSyslog {
 
@@ -15,12 +19,23 @@ public class OktaSyslog {
         System.out.flush();
     }
 
+    private static void logEvents(LogEventList logEvents) {
+
+        logEvents.stream().forEach(new Consumer<LogEvent>() {
+            public void accept(LogEvent event) {
+                System.out.println(event.toString());
+            }
+        });
+
+
+    }
+
 
     public static void main(String[] args){
 
         Client client = Clients.builder()
-                .setOrgUrl("https://graylog-dev-337840.okta.com")
-                .setClientCredentials(new TokenClientCredentials("00JJ3b6EcWUOcc1SEXBqHRwfodQIRpMaz5W3of2UVG"))
+                .setOrgUrl("graylogdomain")
+                .setClientCredentials(new TokenClientCredentials("<secret>"))
                 .build();
 
         UserList users = client.listUsers();
@@ -28,7 +43,29 @@ public class OktaSyslog {
         // get the first user in the collection
         println("First user in collection: " + users.iterator().next().getProfile().getEmail());
 
-        //User user = client.getUser("Priya Rammohan");
+        //get all the logs
+        /*LogEventList logEvents = client.getLogs();
+        logEvents(client.getLogs());*/
+
+
+        //filter query example
+        /*get logs for a particular eventType
+        actor who caused the action
+        eventType eq "system.api_token.create"
+        outcome of the event
+        severity eq "INFO"
+        target*/
+        LogEventList logEvents = client.getLogs(null, null, "eventType eq \"system.api_token.create\"", null , null);
+        System.out.println("the events with eventType equals system.api_token.create------------------------------------------------------------------"+logEvents);
+        logEvents(logEvents);
+
+        LogEventList logEvents1 = client.getLogs(null, null, null, "INFO" , null);
+        System.out.println("----------------------------severity WARN");
+        logEvents(logEvents1);
+
+
+
+
 
     }
 
