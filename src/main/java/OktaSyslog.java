@@ -26,17 +26,14 @@ public class OktaSyslog {
                 System.out.println(event.toString());
             }
         });
-
-
     }
 
 
     public static void main(String[] args){
 
-        Client client = Clients.builder()
-                .setOrgUrl("graylogdomain")
-                .setClientCredentials(new TokenClientCredentials("<secret>"))
-                .build();
+        //refer: https://developer.okta.com/okta-sdk-java/development/apidocs/index.html?com/okta/sdk/client/ClientBuilder.html
+        //yaml file is in the default location.
+        Client client = Clients.builder().build();
 
         UserList users = client.listUsers();
 
