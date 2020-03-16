@@ -8,7 +8,10 @@ import com.okta.sdk.resource.user.UserList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OktaSyslog {
 
@@ -19,13 +22,31 @@ public class OktaSyslog {
         System.out.flush();
     }
 
-    private static void logEvents(LogEventList logEvents) {
+    private static void accept(LogEvent logEvent) {
+        System.out.printf("Time=%s,Actor=%s,Event Info=%s%n",
+                logEvent.getPublished(),
+                logEvent.getActor().getDisplayName(),
+                logEvent.getDisplayMessage()
+                );
+    }
 
-        logEvents.stream().forEach(new Consumer<LogEvent>() {
-            public void accept(LogEvent event) {
-                System.out.println(event.toString());
-            }
-        });
+    /**
+     * How to implement your client
+     * @param logEvents
+     */
+    private static void print(LogEventList logEvents) {
+      //Example using parallel streams and using your own Fork join pool
+      logEvents.stream().parallel().forEach(OktaSyslog::accept);
+      Spliterator<LogEvent> events1 = logEvents.spliterator();
+      if(events1.hasCharacteristics(Spliterator.ORDERED)) {
+                /**
+                 *Person 1: What is this huge number?
+                  Person 2 (Master Coder): It is the 64 bit integer limit. That number is over nine quintillion.
+                  Person 3 (Master Coder): 9,223,372,036,854,775,807, to be exact.
+                 */
+                System.out.println("estimateSize:"+events1.estimateSize());
+                events1.forEachRemaining(OktaSyslog::accept);
+      }
     }
 
 
@@ -35,14 +56,12 @@ public class OktaSyslog {
         //yaml file is in the default location.
         Client client = Clients.builder().build();
 
-        UserList users = client.listUsers();
-
-        // get the first user in the collection
-        println("First user in collection: " + users.iterator().next().getProfile().getEmail());
-
         //get all the logs
         LogEventList logEvents = client.getLogs();
-        logEvents(client.getLogs());
+        print(logEvents);
+
+       // LogEventList logEvents2 = client.getLogs(null, null, "eventType eq \"system.api_token.create\"", null , null);
+       // print(logEvents2);
 
         //filter query example
         /*get logs based on these filters
@@ -51,14 +70,15 @@ public class OktaSyslog {
         outcome of the event
         severity eq "INFO"
         target*/
-        LogEventList logEvents2 = client.getLogs(null, null, "eventType eq \"system.api_token.create\"", null , null);
-        System.out.println("the events with eventType equals system.api_token.create------------------------------------------------------------------"+logEvents);
-        logEvents(logEvents2);
+        //LogEventList logEvents2 = client.getLogs(null, null, "eventType eq \"system.api_token.create\"", null , null);
+       // System.out.println("the events with eventType equals system.api_token.create------------------------------------------------------------------"+logEvents);
+        //logEvents(logEvents2);
 
-        LogEventList logEvents1 = client.getLogs(null, null, null, "INFO" , null);
-        System.out.println("----------------------------severity WARN");
-        logEvents(logEvents1);
+        //LogEventList logEvents1 = client.getLogs(null, null, null, "INFO" , null);
+        //System.out.println("----------------------------severity WARN");
+        //logEvents(logEvents1);
 
     }
+
 
 }
