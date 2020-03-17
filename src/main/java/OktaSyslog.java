@@ -22,6 +22,46 @@ public class OktaSyslog {
         System.out.flush();
     }
 
+    private static void printSpliteratorCharacteristicsForTraversal(LogEventList events) {
+
+        System.out.println("*************************************************************");
+        Spliterator<LogEvent> events1 = events.spliterator();
+        if(events1.hasCharacteristics(Spliterator.ORDERED)) {
+            /**
+             *Person 1: What is this huge number?
+             Person 2 (Master Coder): It is the 64 bit integer limit. That number is over nine quintillion.
+             Person 3 (Master Coder): 9,223,372,036,854,775,807, to be exact.
+             */
+            System.out.println("estimateSize:"+events1.estimateSize());
+
+        }
+        if(events1.hasCharacteristics(Spliterator.SIZED)){
+            System.out.println("sized");
+        }
+        if(events1.hasCharacteristics(Spliterator.IMMUTABLE)){
+            System.out.println("IMMUTABLE");
+        }
+        if(events1.hasCharacteristics(Spliterator.SORTED)){
+            System.out.println("SORTED");
+        }
+        if(events1.hasCharacteristics(Spliterator.CONCURRENT)){
+            System.out.println("CONCURRENT");
+        }
+        if(events1.hasCharacteristics(Spliterator.IMMUTABLE)){
+            System.out.println("IMMUTABLE");
+        }
+        if(events1.hasCharacteristics(Spliterator.NONNULL)){
+            System.out.println("NONNULL");
+        }
+        if(events1.hasCharacteristics(Spliterator.DISTINCT)){
+            System.out.println("DISTINCT");
+        }
+        if(events1.hasCharacteristics(Spliterator.IMMUTABLE)){
+            System.out.println("IMMUTABLE");
+        }
+        System.out.println("*************************************************************");
+    }
+
     private static void accept(LogEvent logEvent) {
         System.out.printf("Time=%s,Actor=%s,Event Info=%s%n",
                 logEvent.getPublished(),
@@ -32,33 +72,39 @@ public class OktaSyslog {
 
     /**
      * How to implement your client
-     * @param logEvents
      */
-    private static void print(LogEventList logEvents) {
+    private static void p_getlogs() {
       //Example using parallel streams and using your own Fork join pool
+      long time = System.currentTimeMillis();
+      Client client = Clients.builder().build();
+       //get all the logs
+      LogEventList logEvents = client.getLogs();
       logEvents.stream().parallel().forEach(OktaSyslog::accept);
-      Spliterator<LogEvent> events1 = logEvents.spliterator();
-      if(events1.hasCharacteristics(Spliterator.ORDERED)) {
-                /**
-                 *Person 1: What is this huge number?
-                  Person 2 (Master Coder): It is the 64 bit integer limit. That number is over nine quintillion.
-                  Person 3 (Master Coder): 9,223,372,036,854,775,807, to be exact.
-                 */
-                System.out.println("estimateSize:"+events1.estimateSize());
-                events1.forEachRemaining(OktaSyslog::accept);
-      }
+      time = System.currentTimeMillis() - time;
+      System.out.println("elapsed time in ms ="+time);
+      //printSpliteratorCharacteristicsForTraversal(logEvents);
     }
 
+    private static void s_getlogs() {
+        //Example using parallel streams and using your own Fork join pool
+        long time = System.currentTimeMillis();
+        Client client = Clients.builder().build();
+        //get all the logs
+        LogEventList logEvents = client.getLogs();
+        logEvents.stream().forEach(OktaSyslog::accept);
+        time = System.currentTimeMillis() - time;
+        System.out.println("elapsed time in ms ="+time);
+        //printSpliteratorCharacteristicsForTraversal(logEvents);
+    }
+
+    private static void benchMark() {
+       // p_getlogs();
+        s_getlogs();
+    }
 
     public static void main(String[] args){
 
-        //refer: https://developer.okta.com/okta-sdk-java/development/apidocs/index.html?com/okta/sdk/client/ClientBuilder.html
-        //yaml file is in the default location.
-        Client client = Clients.builder().build();
-
-        //get all the logs
-        LogEventList logEvents = client.getLogs();
-        print(logEvents);
+        benchMark();
 
        // LogEventList logEvents2 = client.getLogs(null, null, "eventType eq \"system.api_token.create\"", null , null);
        // print(logEvents2);
